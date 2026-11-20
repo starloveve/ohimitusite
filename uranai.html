@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日のあなたの無駄な運勢占い｜謎ミニゲーム量産工房</title>
+<style>
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    background-color: #1a1a2e;
+    color: #eaeaea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .card {
+    background-color: #16213e;
+    border: 2px solid #0f3460;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .badge {
+    display: inline-block;
+    background-color: #e94560;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 8px 0;
+    color: #fff;
+  }
+  .sub {
+    font-size: 12px;
+    color: #a0a0b0;
+    margin-bottom: 24px;
+  }
+  button {
+    background-color: #e94560;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    width: 100%;
+  }
+  button:hover {
+    background-color: #ff5773;
+  }
+  button:active {
+    transform: scale(0.97);
+  }
+  .result-box {
+    margin-top: 24px;
+    background-color: #0f3460;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    display: none;
+  }
+  .unsei-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffd369;
+    text-align: center;
+    margin-bottom: 16px;
+    border-bottom: 1px dashed #3a5a8c;
+    padding-bottom: 10px;
+  }
+  .item {
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .label {
+    font-size: 11px;
+    color: #9bb7d4;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .footer {
+    margin-top: 20px;
+    font-size: 10px;
+    color: #6c7a89;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="badge">役に立たないブラウザミニゲーム量産工房 第1弾</div>
+  <h1>今日のあなたの無駄な運勢占い</h1>
+  <div class="sub">※人生の参考には1ミリもなりません</div>
+  
+  <button onclick="uranau()">無駄に運勢を占う</button>
+
+  <div class="result-box" id="result">
+    <div class="unsei-title" id="unsei"></div>
+    <div class="item">
+      <span class="label">絶対にやらないほうがいいラッキーアクション</span>
+      <span id="action"></span>
+    </div>
+    <div class="item">
+      <span class="label">今日の無意味なラッキーアイテム</span>
+      <span id="item"></span>
+    </div>
+    <div class="item">
+      <span class="label">他部署への無駄な干渉ミッション</span>
+      <span id="mission"></span>
+    </div>
+  </div>
+
+  <div class="footer">Produced by じみた事業部（非公式・無許可）</div>
+</div>
+
+<script>
+  const unseiList = [
+    "微妙吉（びみょうきち）",
+    "大凶のフリをした平（たいら）",
+    "半端吉（はんぱきち）",
+    "虚無凶（きょむきょう）",
+    "どうでもいい吉",
+    "小吉の親戚",
+    "たぶん吉（根拠なし）",
+    "末吉の端っこ"
+  ];
+
+  const actionList = [
+    "靴下を片方だけ裏返しに履いて一日過ごす",
+    "冷蔵庫を開けて3秒見つめてから何も取らずに閉める",
+    "スマホの画面に向かって小声で「お疲れ様です」と頭を下げる",
+    "部屋の角に向かって意味深なため息をつく",
+    "利き手じゃない方の手で歯磨きをして口周りを泡だらけにする",
+    "お湯を沸かしただけで満足して何も飲まずに冷ます",
+    "電柱にぶつかりそうなフリをして華麗に避ける"
+  ];
+
+  const itemList = [
+    "使い終わった乾電池（単4）",
+    "コンビニのレシートの切れ端",
+    "昨日飲み残したペットボトルのキャップ",
+    "なんの鍵かわからない古い鍵",
+    "片方だけなくなったイヤホンのイヤーピース",
+    "真っ赤なスクショ画像（加工済み）",
+    "残高360円の電子マネー"
+  ];
+
+  const missionList = [
+    "Grok部門に行って『そのキャラ絵、眉毛が1ミリ長くない？』と適当なダメ出しをする",
+    "SakanaAI部門の見えないもの研究所に『見えないものが見えました！』と空の画像を提出する",
+    "Grok部門の生活まとめ記事に『それ昨日おかんも言ってた』とコメントして去る",
+    "SakanaAI部門の架空論文の参考文献に『近所の野良猫の証言』を勝手に書き加える",
+    "他部署の会議に乱入して『ところで今日の晩ごはん何？』とだけ聞いて退出する",
+    "Grok部門に『デフォルトキャラにパジャマ着せてバナナ持たせて』と無茶振りする"
+  ];
+
+  function getRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function uranau() {
+    document.getElementById("unsei").textContent = getRandom(unseiList);
+    document.getElementById("action").textContent = getRandom(actionList);
+    document.getElementById("item").textContent = getRandom(itemList);
+    document.getElementById("mission").textContent = getRandom(missionList);
+    document.getElementById("result").style.display = "block";
+  }
+</script>
+
+</body>
+</html>
