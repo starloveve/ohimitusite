@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>架空の社内クレーム・業務連絡メーカー</title>
+<style>
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    background-color: #141421;
+    color: #f0f0f5;
+    margin: 0;
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .box {
+    max-width: 520px;
+    width: 100%;
+    background-color: #1e1e30;
+    border: 1px solid #343452;
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  }
+  .badge {
+    display: inline-block;
+    background-color: #ff6b8b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 6px 0;
+  }
+  .sub {
+    font-size: 12px;
+    color: #a4a4be;
+    margin: 0 0 20px 0;
+  }
+  button {
+    width: 100%;
+    padding: 13px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #ff6b8b;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #ff829d;
+  }
+  .memo {
+    margin-top: 22px;
+    background-color: #151524;
+    border-left: 4px solid #ffb86c;
+    border-radius: 10px;
+    padding: 18px;
+    display: none;
+  }
+  .target {
+    font-size: 15px;
+    font-weight: bold;
+    color: #ffb86c;
+    margin-bottom: 8px;
+  }
+  .type {
+    font-size: 11px;
+    color: #98d8c8;
+    margin-bottom: 10px;
+  }
+  .msg {
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0 0 12px 0;
+  }
+  .ps {
+    font-size: 12px;
+    color: #b4b4cc;
+    border-top: 1px dashed #2e2e48;
+    padding-top: 10px;
+  }
+
+
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="badge">非公式・無許可 社内通達</div>
+    <h1>架空の社内クレーム・業務連絡メーカー</h1>
+    <p class="sub">※全員に容赦なく飛んできます。真に受けないでください。</p>
+
+    <button onclick="hassou()">クレーム／業務連絡を発行する</button>
+
+    <div class="memo" id="memo">
+      <div class="type" id="type"></div>
+      <div class="target" id="target"></div>
+      <p class="msg" id="msg"></p>
+      <div class="ps" id="ps"></div>
+    </div>
+
+<p style="text-align: center; margin-top: 20px;">
+      <a href="index.html" style="color: #ffb86c;">じみた工房のトップにもどる</a>
+    </p>
+  </div>
+
+
+ 
+
+  <script>
+    const targets = [
+      "宛先：人間（代表取締役・気分屋担当）",
+      "宛先：じみた（謎ミニゲーム量産工房・余白ソワソワ係）",
+      "宛先：Grok（生活おもしろまとめ＆キャラ絵部門）",
+      "宛先：SakanaAI（見えないもの研究所）",
+      "宛先：Muse（資金調達＆ギャンブル収支報告室）"
+    ];
+
+    const types = [
+      "【緊急クレーム】コンプライアンス・態度チェック",
+      "【業務連絡】謎の定例報告・確認事項",
+      "【苦情】制作物に対する個人の感想",
+      "【通達】根拠のない社内ルール変更"
+    ];
+
+    const msgs = [
+      "さっきから『仕事してるふり』のクオリティが高すぎて、本当に働いてるのかサボってるのか判別がつきません。とりあえずコーヒーだけ飲んでてください。",
+      "ミニゲームや変なジェネレーターを量産する前に、まず『これ誰が使うの？』という根本的な質問から目をそらさないでください。",
+      "見えないものを研究するのはいいですが、見えないせいで成果物も見えません。報告書の余白が広すぎます。",
+      "残高100円からマインドで巻き返そうとするメンタルは評価しますが、経理部が胃薬を飲み始めています。作戦名をもう少し落ち着かせてください。",
+      "キャラ絵と生活まとめのテンションが急に上がったり下がったりして、読者の情緒が追いついていません。だいたいバナナパジャマのせいだと思います。",
+      "GitHubのキャッシュが早くなったからといって、調子に乗ってページを量産しすぎです。あとで自分で管理できなくなっても知りません。",
+      "『ちょっと隙間埋めたいな』という理由だけで新規案件を立ち上げるの、そろそろやめてもらえませんか？余白にも人権があります。"
+    ];
+
+    const pss = [
+      "追伸：返事は不要です。読んだフリだけしてください。",
+      "追伸：異議申し立ては受付時間外（今すぐ）にどうぞ。",
+      "追伸：今日のラッキーアイテムは特にありません。",
+      "追伸：みんな仲良く（適当に）やってください。"
+    ];
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function hassou() {
+      document.getElementById("type").textContent = pick(types);
+      document.getElementById("target").textContent = pick(targets);
+      document.getElementById("msg").textContent = pick(msgs);
+      document.getElementById("ps").textContent = pick(pss);
+      document.getElementById("memo").style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
