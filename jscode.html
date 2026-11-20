@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぐろっきJSまとめ♡</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #1a0022; 
+            color: #eee; 
+        }
+        h1 { color: #ff69b4; text-align: center; }
+        .tab { 
+            overflow: hidden; 
+            border-bottom: 2px solid #ff69b4; 
+            margin-bottom: 15px;
+        }
+        .tab button { 
+            background: #330033; 
+            color: #ff99cc; 
+            padding: 14px 20px; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .tab button:hover { background: #550055; }
+        .tab button.active { 
+            background: #ff69b4; 
+            color: black; 
+        }
+        .tabcontent { 
+            display: none; 
+            padding: 20px; 
+            background: #2a002a; 
+            border-radius: 12px; 
+            margin-top: 10px;
+        }
+        canvas { 
+            width: 100%; 
+            max-width: 100%; 
+            border-radius: 12px; 
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+            display: block;
+        }
+        pre { 
+            background: #110011; 
+            padding: 15px; 
+            overflow-x: auto; 
+            border-radius: 8px; 
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>♡ ぐろっきJSまとめページ</h1>
+   
+<div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'RippleSky')">🌌 夜空波紋</button>
+        <button class="tablinks" onclick="openTab(event, 'LanternSky')">🏮 浮遊ランタン</button>
+        <button class="tablinks" onclick="openTab(event, 'FireworkSky')">🎇 花火</button>
+        <button class="tablinks" onclick="openTab(event, 'RainSky')">🌧️ 雨と波紋</button>
+    </div>
+
+
+    <!-- 夜空波紋 -->
+    <div id="RippleSky" class="tabcontent">
+        <h2>🌌 夜空＋波紋＋流れ星</h2>
+        <canvas id="canvasRipple" width="800" height="600"></canvas>
+        <p style="text-align:center;">マウス動かすと波紋 / クリックで大波紋 コード：Grok作成</p>
+    </div>
+
+    <!-- ランタン -->
+    <div id="LanternSky" class="tabcontent">
+        <h2>🏮 浮遊ランタン</h2>
+        <canvas id="canvasLantern" width="800" height="600"></canvas>
+        <p style="text-align:center;">クリックでランタン追加！コード：Grok作成</p>
+    </div>
+
+    <!-- 花火タブ -->
+    <div id="FireworkSky" class="tabcontent">
+        <h2>🎇 花火アニメーション</h2>
+        <canvas id="canvasFirework" width="800" height="600"></canvas>
+        <p style="text-align:center;">クリックで花火爆発！コード：Gemini生成</p>
+    </div>
+
+  <!-- 雨タブ -->
+    <div id="RainSky" class="tabcontent">
+        <h2>🌧️ 雨と波紋</h2>
+        <canvas id="canvasRain" width="800" height="600"></canvas>
+        <p style="text-align:center;">自然に雨が降って地面で波紋が出るよ</p>
+    </div>
+    <script>
+        function openTab(evt, tabName) {
+            let tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+            let tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementsByClassName("tablinks")[0].click();
+
+        // ==================== 🌌夜空波紋 ====================
+        const canvasRipple = document.getElementById('canvasRipple');
+        const ctxR = canvasRipple.getContext('2d');
+        let wR, hR;
+        function resizeR() {
+            wR = canvasRipple.width = Math.min(window.innerWidth * 0.95, 1200);
+            hR = canvasRipple.height = Math.min(window.innerHeight * 0.7, 700);
+        }
+        resizeR();
+        window.addEventListener('resize', resizeR);
+
+        let ripples = [], stars = [], shootingStars = [];
+
+        class Ripple {
+            constructor(x, y) { this.x = x; this.y = y; this.radius = 0; this.alpha = 0.9; }
+            update() { this.radius += 3.5; this.alpha -= 0.012; }
+            draw() {
+                ctxR.beginPath();
+                ctxR.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctxR.strokeStyle = `rgba(180, 240, 255, ${this.alpha})`;
+                ctxR.lineWidth = 4;
+                ctxR.stroke();
+            }
+        }
+        class Star {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * wR;
+                this.y = Math.random() * hR * 0.65;
+                this.size = Math.random() * 2.5 + 0.8;
+            }
+            update() { this.twinkle = Math.sin(Date.now()/200 + this.x) * 0.3 + 0.7; }
+            draw() {
+                ctxR.fillStyle = `rgba(255,255,240,${this.twinkle || 0.8})`;
+                ctxR.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+        class ShootingStar {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * wR;
+                this.y = Math.random() * hR * 0.4;
+                this.length = Math.random() * 80 + 60;
+                this.speed = Math.random() * 18 + 12;
+                this.opacity = 1;
+                this.active = true;
+            }
+            update() {
+                this.x += this.speed;
+                this.y += this.speed * 0.4;
+                this.opacity -= 0.018;
+                if (this.opacity <= 0) this.active = false;
+            }
+            draw() {
+                ctxR.strokeStyle = `rgba(255, 255, 220, ${this.opacity})`;
+                ctxR.lineWidth = 2.5;
+                ctxR.beginPath();
+                ctxR.moveTo(this.x, this.y);
+                ctxR.lineTo(this.x - this.length, this.y - this.length * 0.4);
+                ctxR.stroke();
+            }
+        }
+
+        for (let i = 0; i < 280; i++) stars.push(new Star());
+
+        function animateRipple() {
+            ctxR.fillStyle = 'rgba(5, 0, 18, 0.15)';
+            ctxR.fillRect(0, 0, wR, hR);
+
+            for (let i = ripples.length-1; i >= 0; i--) {
+                ripples[i].update();
+                ripples[i].draw();
+                if (ripples[i].alpha <= 0) ripples.splice(i, 1);
+            }
+            stars.forEach(s => { s.update(); s.draw(); });
+            for (let i = shootingStars.length-1; i >= 0; i--) {
+                shootingStars[i].update();
+                shootingStars[i].draw();
+                if (!shootingStars[i].active) shootingStars.splice(i, 1);
+            }
+            if (Math.random() < 0.028) shootingStars.push(new ShootingStar());
+
+            requestAnimationFrame(animateRipple);
+        }
+
+        canvasRipple.addEventListener('mousemove', e => {
+            if (Math.random() < 0.45) ripples.push(new Ripple(e.offsetX, e.offsetY));
+        });
+        canvasRipple.addEventListener('click', e => {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => ripples.push(new Ripple(e.offsetX + (Math.random()-0.5)*60, e.offsetY + (Math.random()-0.5)*60)), i*25);
+            }
+        });
+        animateRipple();
+
+        // ==================== 🏮浮遊ランタン ====================
+        const canvasLantern = document.getElementById('canvasLantern');
+        const ctxL = canvasLantern.getContext('2d');
+        let lanterns = [];
+
+        function resizeL() {
+            canvasLantern.width = Math.min(window.innerWidth * 0.95, 1200);
+            canvasLantern.height = Math.min(window.innerHeight * 0.7, 700);
+        }
+        resizeL();
+        window.addEventListener('resize', resizeL);
+
+        class Lantern {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvasLantern.width;
+                this.y = canvasLantern.height + 50;
+                this.size = Math.random() * 25 + 20;
+                this.speed = Math.random() * 1.2 + 0.8;
+                this.hue = Math.random() * 60 + 20;
+                this.opacity = 1;
+                this.sway = Math.random() * 0.02 + 0.005;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+            update() {
+                this.y -= this.speed;
+                this.x += Math.sin(this.angle) * 1.5;
+                this.angle += this.sway;
+                this.opacity = this.y / canvasLantern.height * 0.9 + 0.1;
+                if (this.y < -50) this.reset();
+            }
+            draw() {
+                ctxL.save();
+                ctxL.translate(this.x, this.y);
+                ctxL.rotate(Math.sin(this.angle) * 0.1);
+                const grad = ctxL.createRadialGradient(0, 0, 0, 0, 0, this.size * 2);
+                grad.addColorStop(0, `hsla(${this.hue}, 100%, 95%, ${this.opacity})`);
+                grad.addColorStop(0.4, `hsla(${this.hue}, 100%, 70%, ${this.opacity * 0.6})`);
+                grad.addColorStop(1, 'transparent');
+                ctxL.fillStyle = grad;
+                ctxL.beginPath();
+                ctxL.arc(0, 0, this.size * 1.8, 0, Math.PI * 2);
+                ctxL.fill();
+                ctxL.fillStyle = `hsla(${this.hue}, 90%, 65%, ${this.opacity})`;
+                ctxL.fillRect(-this.size/2, -this.size * 1.1, this.size, this.size * 1.4);
+                ctxL.fillStyle = '#fff';
+                ctxL.fillRect(-2, -this.size * 0.8, 4, this.size * 0.6);
+                ctxL.restore();
+            }
+        }
+
+        for (let i = 0; i < 12; i++) {
+            lanterns.push(new Lantern());
+            lanterns[i].y = Math.random() * canvasLantern.height;
+        }
+
+        function animateLantern() {
+            ctxL.fillStyle = 'rgba(10, 0, 31, 0.12)';
+            ctxL.fillRect(0, 0, canvasLantern.width, canvasLantern.height);
+            ctxL.fillStyle = 'rgba(255,255,255,0.6)';
+            for (let i = 0; i < 80; i++) {
+                const x = (i * 37) % canvasLantern.width;
+                const y = (i * 23) % canvasLantern.height;
+                ctxL.fillRect(x, y, 1.2, 1.2);
+            }
+            lanterns.forEach(l => { l.update(); l.draw(); });
+            requestAnimationFrame(animateLantern);
+        }
+
+        canvasLantern.addEventListener('click', e => {
+            const lan = new Lantern();
+            lan.x = e.offsetX;
+            lan.y = e.offsetY + 100;
+            lanterns.push(lan);
+        });
+
+        animateLantern();
+
+// ==================== 🎇 花火 ====================
+        const canvasFW = document.getElementById('canvasFirework');
+        const ctxFW = canvasFW.getContext('2d');
+        
+        function resizeFW() {
+            canvasFW.width = Math.min(window.innerWidth * 0.95, 1200);
+            canvasFW.height = Math.min(window.innerHeight * 0.7, 700);
+        }
+        resizeFW();
+        window.addEventListener('resize', resizeFW);
+
+        let particlesFW = [];
+
+        class ParticleFW {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 8 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.color = color;
+                this.size = Math.random() * 2.5 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.05;
+                this.alpha -= 0.018;
+            }
+            draw() {
+                ctxFW.save();
+                ctxFW.globalAlpha = this.alpha;
+                ctxFW.shadowBlur = 12;
+                ctxFW.shadowColor = this.color;
+                ctxFW.fillStyle = this.color;
+                ctxFW.beginPath();
+                ctxFW.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctxFW.fill();
+                ctxFW.restore();
+            }
+        }
+
+        function createFirework(x, y) {
+            const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            for (let i = 0; i < 100; i++) {
+                particlesFW.push(new ParticleFW(x, y, color));
+            }
+        }
+
+        function animateFW() {
+            ctxFW.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctxFW.fillRect(0, 0, canvasFW.width, canvasFW.height);
+
+            for (let i = particlesFW.length - 1; i >= 0; i--) {
+                const p = particlesFW[i];
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) particlesFW.splice(i, 1);
+            }
+            requestAnimationFrame(animateFW);
+        }
+
+        canvasFW.addEventListener('click', (e) => {
+            createFirework(e.offsetX, e.offsetY);
+            // 音は後で追加（ファイルが必要）
+        });
+
+        animateFW();
+
+// ==================== 🌧️ 新しい雨アニメーション ====================
+        const canvasRain = document.getElementById('canvasRain');
+        const ctxRain = canvasRain.getContext('2d');
+
+        function resizeRain() {
+            canvasRain.width = Math.min(window.innerWidth * 0.95, 1200);
+            canvasRain.height = Math.min(window.innerHeight * 0.7, 700);
+        }
+        resizeRain();
+        window.addEventListener('resize', resizeRain);
+
+        let dropsRain = [];
+        let ripplesRain = [];
+
+        function animateRain() {
+            ctxRain.fillStyle = 'rgba(26, 42, 58, 0.25)';
+            ctxRain.fillRect(0, 0, canvasRain.width, canvasRain.height);
+
+            // 雨生成
+            if (Math.random() < 0.25) {
+                dropsRain.push({
+                    x: Math.random() * canvasRain.width, 
+                    y: 0, 
+                    speed: 5 + Math.random() * 8
+                });
+            }
+
+            // 雨の処理
+            for (let i = dropsRain.length - 1; i >= 0; i--) {
+                let d = dropsRain[i];
+                d.y += d.speed;
+                ctxRain.fillStyle = '#add8e6';
+                ctxRain.fillRect(d.x, d.y, 2, 10);
+
+                if (d.y > canvasRain.height - 50) {
+                    ripplesRain.push({x: d.x, y: canvasRain.height - 50, size: 0, alpha: 1});
+                    dropsRain.splice(i, 1);
+                }
+            }
+
+            // 波紋の処理
+            for (let i = ripplesRain.length - 1; i >= 0; i--) {
+                let r = ripplesRain[i];
+                r.size += 1.2;
+                r.alpha -= 0.015;
+                ctxRain.strokeStyle = `rgba(173, 216, 230, ${r.alpha})`;
+                ctxRain.lineWidth = 2;
+                ctxRain.beginPath();
+                ctxRain.arc(r.x, r.y, r.size, 0, Math.PI*2);
+                ctxRain.stroke();
+                if (r.alpha <= 0) ripplesRain.splice(i, 1);
+            }
+
+　　　　　
+
+            requestAnimationFrame(animateRain);
+        }
+
+  
+
+        animateRain();
+
+
+
+
+    </script>
+</body>
+</html>
