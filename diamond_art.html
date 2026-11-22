@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>ダイヤモンドアート風 ドットツール（グリッドサイズ変更対応）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ダイヤモンドアート風 ドットツール（画像持ち込み対応）</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -12,9 +13,10 @@
     height: 100vh;
     background: #2b2b2b;
     color: #eee;
+    --img-opacity: 0.55;
   }
   .color-panel {
-    width: 260px;
+    width: 280px;
     background: #1e1e1e;
     padding: 15px;
     border-right: 1px solid #444;
@@ -117,7 +119,6 @@
     color: #6bcf7f;
     height: 16px;
   }
-  /* グリッドサイズスライダー */
   .grid-size-control {
     width: 100%;
     background: #2a2a2a;
@@ -142,6 +143,38 @@
     text-align: center;
     margin-top: 4px;
   }
+  .image-upload-area {
+    width: 100%;
+    background: #2a2a2a;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+  }
+  .image-upload-area label {
+    font-size: 12px;
+    color: #aaa;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .image-upload-area .file-btn {
+    background: #3a5a3a;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .image-upload-area .file-btn:hover { background: #4a7a4a; }
+  .image-name {
+    font-size: 11px;
+    color: #6bcf7f;
+    margin-top: 6px;
+    word-break: break-all;
+  }
+  .disclaimer {
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+    line-height: 1.3;
+    margin-top: 4px;
+  }
 
   .main-area {
     flex: 1;
@@ -164,7 +197,8 @@
     display: block;
     max-width: 100%;
     height: auto;
-    opacity: 0.3;
+    opacity: var(--img-opacity, 0.55);
+    transition: opacity 0.2s;
   }
   .grid {
     position: absolute;
@@ -177,12 +211,12 @@
     background: rgba(0,0,0,0.05);
   }
   .cell {
-    background: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.08);
     cursor: pointer;
     border-radius: 50%;
-    transition: transform 0.05s;
-    box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
-    border: 1px solid rgba(0,0,0,0.08);
+    transition: transform 0.05s, background 0.1s;
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.06);
   }
   .cell:hover {
     transform: scale(1.15);
@@ -193,6 +227,15 @@
       inset -2px -2px 4px rgba(0,0,0,0.3),
       inset 2px 2px 4px rgba(255,255,255,0.4),
       0 2px 3px rgba(0,0,0,0.3);
+  }
+  .no-image-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #888;
+    font-size: 14px;
+    pointer-events: none;
   }
 </style>
 </head>
@@ -209,6 +252,26 @@
 
   <div class="preset-palette" id="presetPalette"></div>
 
+  <!-- 画像アップロード -->
+  <div class="image-upload-area">
+    <label>下絵画像を読み込む</label>
+    <label class="file-btn">画像を選択<input type="file" id="imageInput" accept="image/*" onchange="loadUserImage(this)"></label>
+    <div class="image-name" id="imageName">デフォルト画像を使用中</div>
+    <div class="disclaimer">
+      ※アップロードした画像は<br>ブラウザ内のみで処理されます。<br>サーバーには送信されません。<br>著作権等はアップロードした<br>本人の責任となります。
+    </div>
+  </div>
+
+  <!-- 下絵の透明度調整 -->
+  <div class="grid-size-control">
+    <label>
+      <span>下絵の見えやすさ</span>
+      <span id="imgOpacityLabel">55%</span>
+    </label>
+    <input type="range" id="imgOpacitySlider" min="10" max="100" value="55">
+    <div class="size-hint">薄い ← → 濃い</div>
+  </div>
+
   <!-- グリッドサイズ変更 -->
   <div class="grid-size-control">
     <label>
@@ -216,7 +279,7 @@
       <span id="gridSizeLabel">30列</span>
     </label>
     <input type="range" id="gridSizeSlider" min="20" max="120" value="30" step="5">
-    <div class="size-hint">小← ざっくり　|　細かい →大</div>
+    <div class="size-hint">小← ざっり　|　細かい →大</div>
   </div>
 
   <div class="controls">
@@ -238,7 +301,8 @@
 
 <div class="main-area">
   <div class="canvas-container" id="container">
-    <img id="baseImg" class="base-image" src="img/bbv.png" alt="下絵">
+    <img id="baseImg" class="base-image" src="" alt="下絵" style="opacity:0.3; min-width:400px; min-height:300px; background:#222;">
+    <div class="no-image-msg" id="noImageMsg">画像を読み込んでください</div>
     <div class="grid" id="pixelGrid"></div>
   </div>
 </div>
@@ -333,23 +397,63 @@
     presetContainer.appendChild(btn);
   });
 
-  /* ========== ドットグリッド ========== */
+  /* ========== 画像読み込み ========== */
   const img = document.getElementById('baseImg');
   const grid = document.getElementById('pixelGrid');
   const slider = document.getElementById('gridSizeSlider');
   const sizeLabel = document.getElementById('gridSizeLabel');
+  const imageName = document.getElementById('imageName');
+  const noImageMsg = document.getElementById('noImageMsg');
   let gridRows = 40, gridCols = 30;
+  let currentImageData = null;
 
+  function loadUserImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // 画像ファイルチェック
+    if (!file.type.startsWith('image/')) {
+      showStatus('画像ファイルを選択してください');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.src = reader.result;
+      imageName.textContent = file.name;
+      noImageMsg.style.display = 'none';
+      img.style.background = 'transparent';
+
+      // 画像読み込み完了後にグリッド生成
+      img.onload = () => {
+        initGrid();
+        autoSave();
+      };
+      // キャッシュ済み画像対応
+      if (img.complete) {
+        initGrid();
+        autoSave();
+      }
+    };
+    reader.onerror = () => {
+      showStatus('画像の読み込みに失敗しました');
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  /* ========== ドットグリッド ========== */
   function getAspect() {
-    if (img.naturalWidth > 0) {
+    if (img.naturalWidth > 0 && img.naturalWidth > 10) {
       return img.naturalHeight / img.naturalWidth;
     }
-    return 930 / 1552; // 元画像のアスペクト比をフォールバック
+    return 3 / 4; // デフォルト4:3
   }
 
   function createGrid(cols) {
     const aspect = getAspect();
-    const rows = Math.floor(cols * aspect);
+    const rows = Math.max(10, Math.floor(cols * aspect));
     gridRows = rows;
     gridCols = cols;
 
@@ -387,9 +491,6 @@
     }
   }
 
-  img.onload = initGrid;
-  img.onerror = initGrid;
-
   // スライダー変更時
   slider.addEventListener('input', () => {
     sizeLabel.textContent = slider.value + '列';
@@ -399,7 +500,7 @@
     const aspect = getAspect();
     const rows = Math.floor(cols * aspect);
 
-    // 既存の作業がある場合は確認
+    // 既存の作業がある合は確認
     const hasWork = Array.from(document.querySelectorAll('.cell.filled')).length > 0;
     if (hasWork) {
       if (!confirm('グリッドサイズを変更すると現在の作業がリセットされます。よろしいですか？')) {
@@ -414,11 +515,6 @@
     autoSave();
   });
 
-  // 画像が読み込まれていない場合でも初期化
-  if (img.complete) {
-    initGrid();
-  }
-
   function clearGrid() {
     document.querySelectorAll('.cell').forEach(c => {
       c.style.backgroundColor = 'rgba(255,255,255,0.4)';
@@ -428,10 +524,23 @@
   }
 
   let imgVisible = true;
+  let currentImgOpacity = 0.55;
   function toggleImage() {
     imgVisible = !imgVisible;
-    img.style.opacity = imgVisible ? '0.3' : '0';
+    img.style.opacity = imgVisible ? currentImgOpacity : '0';
   }
+
+  // 下絵の透明度スライダー
+  const imgOpacitySlider = document.getElementById('imgOpacitySlider');
+  const imgOpacityLabel = document.getElementById('imgOpacityLabel');
+  imgOpacitySlider.addEventListener('input', () => {
+    const val = imgOpacitySlider.value;
+    currentImgOpacity = val / 100;
+    imgOpacityLabel.textContent = val + '%';
+    if (imgVisible) {
+      img.style.opacity = currentImgOpacity;
+    }
+  });
 
   /* ========== 保存・読込 ========== */
   function getColors() {
@@ -456,6 +565,7 @@
       cols: gridCols,
       rows: gridRows,
       colors: getColors(),
+      imageName: imageName.textContent,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem('diamondArt_auto', JSON.stringify(data));
@@ -494,6 +604,7 @@
       cols: gridCols,
       rows: gridRows,
       colors: getColors(),
+      imageName: imageName.textContent,
       savedAt: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -527,6 +638,13 @@
     };
     reader.readAsText(file);
     input.value = '';
+  }
+
+  // 初期状態：画像未読み込み時の表示
+  if (!img.src || img.src === window.location.href) {
+    noImageMsg.style.display = 'block';
+  } else {
+    noImageMsg.style.display = 'none';
   }
 </script>
 </body>
