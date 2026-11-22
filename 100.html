@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>100ます計算 - ランダム強化版</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
+    h1 { color: #333; }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    td, th {
+      width: 55px;
+      height: 55px;
+      border: 1px solid #666;
+      font-size: 18px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    th { background: #4CAF50; color: white; font-weight: bold; }
+    input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      text-align: center;
+      font-size: 18px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    input:focus { background: #ffffcc; }
+    input.correct { background: #e8ffe8; }
+    input.wrong { background: #ffe8e8; }
+    .controls { margin: 15px; }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>100ます計算 - ランダム版</h1>
+  
+  <div class="controls">
+    <label>計算の種類：
+      <select id="mode">
+        <option value="add">足し算</option>
+        <option value="sub">引き算</option>
+        <option value="mul">掛け算</option>
+      </select>
+    </label>
+    <button onclick="generateGrid()">新しい問題を作る</button>
+    <button onclick="checkAnswers()">答え合わせ</button>
+    <button onclick="showAnswers()">全問答え表示</button>
+  </div>
+
+  <table id="grid"></table>
+
+  <script>
+    function getRandomNumbers() {
+      let nums = [];
+      while (nums.length < 10) {
+        const rand = Math.floor(Math.random() * 20) + 1;
+        if (!nums.includes(rand)) nums.push(rand);
+      }
+      return nums;
+    }
+
+    function generateGrid() {
+      const mode = document.getElementById('mode').value;
+      const table = document.getElementById('grid');
+      table.innerHTML = '';
+
+      const rowNums = getRandomNumbers();
+      const colNums = getRandomNumbers();
+
+      // ヘッダー
+      let html = '<tr><th></th>';
+      colNums.forEach(n => html += `<th>${n}</th>`);
+      html += '</tr>';
+
+      for (let i = 0; i < 10; i++) {
+        html += `<tr><th>${rowNums[i]}</th>`;
+        for (let j = 0; j < 10; j++) {
+          const a = rowNums[i];
+          const b = colNums[j];
+          let value = mode === 'add' ? a + b :
+                     mode === 'sub' ? Math.abs(a - b) : a * b;
+
+          html += `
+            <td>
+              <input type="text" data-answer="${value}" maxlength="3" 
+                     data-row="${i}" data-col="${j}">
+            </td>`;
+        }
+        html += '</tr>';
+      }
+
+      table.innerHTML = html;
+
+      // 矢印キー設定（生成後にinputを取得）
+      setupArrowKeys();
+    }
+
+    function setupArrowKeys() {
+      const inputs = document.querySelectorAll('#grid input');
+      inputs.forEach(input => {
+        input.addEventListener('keydown', (e) => {
+          const row = parseInt(input.dataset.row);
+          const col = parseInt(input.dataset.col);
+          let next = null;
+
+          switch (e.key) {
+            case 'ArrowRight': next = getInput(row, col + 1); break;
+            case 'ArrowLeft':  next = getInput(row, col - 1); break;
+            case 'ArrowDown':  next = getInput(row + 1, col); break;
+            case 'ArrowUp':    next = getInput(row - 1, col); break;
+          }
+
+          if (next) {
+            e.preventDefault();
+            next.focus();
+          }
+        });
+      });
+    }
+
+    function getInput(row, col) {
+      if (row < 0 || row > 9 || col < 0 || col > 9) return null;
+      return document.querySelector(`#grid input[data-row="${row}"][data-col="${col}"]`);
+    }
+
+    function checkAnswers() {
+      const inputs = document.querySelectorAll('#grid input');
+      inputs.forEach(input => {
+        const answer = parseInt(input.dataset.answer);
+        const userInput = input.value.trim();
+        input.classList.remove('correct', 'wrong');
+
+        if (userInput === '') return;
+
+        if (parseInt(userInput) === answer) {
+          input.classList.add('correct');
+        } else {
+          input.classList.add('wrong');
+        }
+      });
+    }
+
+    function showAnswers() {
+      const inputs = document.querySelectorAll('#grid input');
+      inputs.forEach(input => {
+        input.value = input.dataset.answer;
+        input.classList.add('correct');
+      });
+    }
+
+    // 初回生成
+    window.onload = generateGrid;
+  </script>
+<footer>コード:Grok生成<br><a href="index.html">じみた工房へ戻る</a></footer>
+</body>
+</html>
