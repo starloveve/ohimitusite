@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ダイヤモンドアート風 ドットツール（グリッドサイズ変更対応）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    display: flex;
+    height: 100vh;
+    background: #2b2b2b;
+    color: #eee;
+  }
+  .color-panel {
+    width: 260px;
+    background: #1e1e1e;
+    padding: 15px;
+    border-right: 1px solid #444;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .color-panel h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #ccc;
+  }
+  .wheel-box {
+    position: relative;
+    width: 200px;
+    height: 200px;
+  }
+  #paletteCanvas {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    cursor: crosshair;
+    display: block;
+  }
+  .picker {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(0,0,0,0.8);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    display: none;
+  }
+  .current-color-display {
+    width: 100%;
+    height: 36px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    background: #ff6b6b;
+  }
+  .color-value {
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    color: #aaa;
+  }
+  .preset-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+  .color-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .color-btn:hover {
+    border-color: #fff;
+    transform: scale(1.1);
+  }
+  .hint {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .controls button, .file-btn {
+    background: #444;
+    color: #eee;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .controls button:hover, .file-btn:hover { background: #555; }
+  .file-btn { display: inline-block; position: relative; }
+  .file-btn input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .save-status {
+    font-size: 11px;
+    color: #6bcf7f;
+    height: 16px;
+  }
+  /* グリッドサイズスライダー */
+  .grid-size-control {
+    width: 100%;
+    background: #2a2a2a;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 4px;
+  }
+  .grid-size-control label {
+    font-size: 12px;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .grid-size-control input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+  }
+  .grid-size-control .size-hint {
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .main-area {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    background: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .canvas-container {
+    position: relative;
+    display: inline-block;
+    background: #fff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    min-width: 400px;
+    min-height: 240px;
+  }
+  .base-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    opacity: 0.3;
+  }
+  .grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    gap: 1px;
+    background: rgba(0,0,0,0.05);
+  }
+  .cell {
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: transform 0.05s;
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .cell:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 5px rgba(255,255,255,0.4);
+  }
+  .cell.filled {
+    box-shadow:
+      inset -2px -2px 4px rgba(0,0,0,0.3),
+      inset 2px 2px 4px rgba(255,255,255,0.4),
+      0 2px 3px rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div class="color-panel">
+  <h3>カラーパレット（常時表示）</h3>
+  <div class="wheel-box">
+    <canvas id="paletteCanvas" width="400" height="400"></canvas>
+    <div class="picker" id="picker"></div>
+  </div>
+  <div class="current-color-display" id="currentDisplay"></div>
+  <div class="color-value" id="colorValue">#ff6b6b</div>
+
+  <div class="preset-palette" id="presetPalette"></div>
+
+  <!-- グリッドサイズ変更 -->
+  <div class="grid-size-control">
+    <label>
+      <span>グリッドサイズ</span>
+      <span id="gridSizeLabel">30列</span>
+    </label>
+    <input type="range" id="gridSizeSlider" min="20" max="120" value="30" step="5">
+    <div class="size-hint">小← ざっくり　|　細かい →大</div>
+  </div>
+
+  <div class="controls">
+    <button onclick="saveWork()">保</button>
+    <button onclick="loadWork()">読込</button>
+    <button onclick="exportJSON()">書出</button>
+    <label class="file-btn">読込(file)<input type="file" id="fileInput" accept=".json" onchange="importJSON(this)"></label>
+    <button onclick="clearGrid()">全消</button>
+    <button onclick="toggleImage()">下絵</button>
+  </div>
+  <div class="save-status" id="saveStatus"></div>
+
+  <div class="hint">
+    丸いパレットをドラッグ → 色をスポイト<br>
+    右の丸をクリック → ビーズを置く<br>
+    スライダーでグリッドの細かさ変更
+  </div>
+</div>
+
+<div class="main-area">
+  <div class="canvas-container" id="container">
+    <img id="baseImg" class="base-image" src="img/bbv.png" alt="下絵">
+    <div class="grid" id="pixelGrid"></div>
+  </div>
+</div>
+
+<script>
+  /* ========== カラーホイール ========== */
+  const pCanvas = document.getElementById('paletteCanvas');
+  const pCtx = pCanvas.getContext('2d', { willReadFrequently: true });
+  const picker = document.getElementById('picker');
+  const currentDisplay = document.getElementById('currentDisplay');
+  const colorValue = document.getElementById('colorValue');
+
+  let currentColor = '#ff6b6b';
+  let isPicking = false;
+
+  function drawColorWheel() {
+    const w = pCanvas.width, h = pCanvas.height;
+    const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2;
+    pCtx.clearRect(0, 0, w, h);
+
+    const grad = pCtx.createConicGradient(0, cx, cy);
+    for (let i = 0; i <= 360; i += 5) {
+      grad.addColorStop(i / 360, `hsl(${i}, 100%, 50%)`);
+    }
+    pCtx.fillStyle = grad;
+    pCtx.beginPath();
+    pCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    pCtx.fill();
+
+    const grad2 = pCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad2.addColorStop(0, 'rgba(255,255,255,1)');
+    grad2.addColorStop(0.45, 'rgba(255,255,255,0)');
+    grad2.addColorStop(0.55, 'rgba(0,0,0,0)');
+    grad2.addColorStop(1, 'rgba(0,0,0,1)');
+    pCtx.fillStyle = grad2;
+    pCtx.beginPath();
+    pCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    pCtx.fill();
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+
+  function pickColor(clientX, clientY) {
+    const rect = pCanvas.getBoundingClientRect();
+    const scaleX = pCanvas.width / rect.width;
+    const scaleY = pCanvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    const px = Math.max(0, Math.min(pCanvas.width, x));
+    const py = Math.max(0, Math.min(pCanvas.height, y));
+
+    const pixel = pCtx.getImageData(px, py, 1, 1).data;
+    const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+
+    currentColor = hex;
+    currentDisplay.style.backgroundColor = hex;
+    colorValue.textContent = hex;
+
+    picker.style.display = 'block';
+    picker.style.left = (px / scaleX) + 'px';
+    picker.style.top = (py / scaleY) + 'px';
+    picker.style.borderColor = (pixel[0] + pixel[1] + pixel[2]) / 3 > 128 ? '#000' : '#fff';
+  }
+
+  pCanvas.addEventListener('mousedown', (e) => { isPicking = true; pickColor(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', (e) => { if (isPicking) pickColor(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', () => { isPicking = false; });
+  pCanvas.addEventListener('touchstart', (e) => { isPicking = true; pickColor(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+  window.addEventListener('touchmove', (e) => { if (isPicking) { pickColor(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); } }, { passive: false });
+  window.addEventListener('touchend', () => { isPicking = false; });
+
+  drawColorWheel();
+
+  /* ========== プリセット ========== */
+  const presetColors = [
+    '#ff6b6b','#ff8787','#ffd43b','#69db7c','#4dabf7','#9775fa','#f783ac',
+    '#ffa94d','#51cf66','#339af0','#845ef7','#e64980',
+    '#495057','#868e96','#ffffff','#000000'
+  ];
+  const presetContainer = document.getElementById('presetPalette');
+  presetColors.forEach(c => {
+    const btn = document.createElement('div');
+    btn.className = 'color-btn';
+    btn.style.backgroundColor = c;
+    btn.onclick = () => {
+      currentColor = c;
+      currentDisplay.style.backgroundColor = c;
+      colorValue.textContent = c;
+    };
+    presetContainer.appendChild(btn);
+  });
+
+  /* ========== ドットグリッド ========== */
+  const img = document.getElementById('baseImg');
+  const grid = document.getElementById('pixelGrid');
+  const slider = document.getElementById('gridSizeSlider');
+  const sizeLabel = document.getElementById('gridSizeLabel');
+  let gridRows = 40, gridCols = 30;
+
+  function getAspect() {
+    if (img.naturalWidth > 0) {
+      return img.naturalHeight / img.naturalWidth;
+    }
+    return 930 / 1552; // 元画像のアスペクト比をフォールバック
+  }
+
+  function createGrid(cols) {
+    const aspect = getAspect();
+    const rows = Math.floor(cols * aspect);
+    gridRows = rows;
+    gridCols = cols;
+
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+    for (let i = 0; i < rows * cols; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+      cell.onclick = () => {
+        cell.style.backgroundColor = currentColor;
+        cell.classList.add('filled');
+        autoSave();
+      };
+      grid.appendChild(cell);
+    }
+  }
+
+  function initGrid() {
+    const cols = parseInt(slider.value);
+    createGrid(cols);
+    sizeLabel.textContent = cols + '列 (' + gridRows + '行)';
+
+    // 保存データがあれば自動復元
+    const saved = localStorage.getItem('diamondArt_auto');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.cols === gridCols && data.rows === gridRows) {
+          restoreColors(data.colors);
+        }
+      } catch(e){}
+    }
+  }
+
+  img.onload = initGrid;
+  img.onerror = initGrid;
+
+  // スライダー変更時
+  slider.addEventListener('input', () => {
+    sizeLabel.textContent = slider.value + '列';
+  });
+  slider.addEventListener('change', () => {
+    const cols = parseInt(slider.value);
+    const aspect = getAspect();
+    const rows = Math.floor(cols * aspect);
+
+    // 既存の作業がある場合は確認
+    const hasWork = Array.from(document.querySelectorAll('.cell.filled')).length > 0;
+    if (hasWork) {
+      if (!confirm('グリッドサイズを変更すると現在の作業がリセットされます。よろしいですか？')) {
+        slider.value = gridCols;
+        sizeLabel.textContent = gridCols + '列 (' + gridRows + '行)';
+        return;
+      }
+    }
+
+    createGrid(cols);
+    sizeLabel.textContent = cols + '列 (' + rows + '行)';
+    autoSave();
+  });
+
+  // 画像が読み込まれていない場合でも初期化
+  if (img.complete) {
+    initGrid();
+  }
+
+  function clearGrid() {
+    document.querySelectorAll('.cell').forEach(c => {
+      c.style.backgroundColor = 'rgba(255,255,255,0.4)';
+      c.classList.remove('filled');
+    });
+    autoSave();
+  }
+
+  let imgVisible = true;
+  function toggleImage() {
+    imgVisible = !imgVisible;
+    img.style.opacity = imgVisible ? '0.3' : '0';
+  }
+
+  /* ========== 保存・読込 ========== */
+  function getColors() {
+    return Array.from(document.querySelectorAll('.cell')).map(c => {
+      const bg = c.style.backgroundColor;
+      return bg || '';
+    });
+  }
+
+  function restoreColors(colors) {
+    const cells = document.querySelectorAll('.cell');
+    colors.forEach((c, i) => {
+      if (cells[i] && c) {
+        cells[i].style.backgroundColor = c;
+        cells[i].classList.add('filled');
+      }
+    });
+  }
+
+  function autoSave() {
+    const data = {
+      cols: gridCols,
+      rows: gridRows,
+      colors: getColors(),
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('diamondArt_auto', JSON.stringify(data));
+  }
+
+  function showStatus(msg) {
+    const el = document.getElementById('saveStatus');
+    el.textContent = msg;
+    setTimeout(() => el.textContent = '', 2000);
+  }
+
+  function saveWork() {
+    autoSave();
+    showStatus('ブラウザに保存しました');
+  }
+
+  function loadWork() {
+    const saved = localStorage.getItem('diamondArt_auto');
+    if (!saved) { showStatus('保存データがありません'); return; }
+    try {
+      const data = JSON.parse(saved);
+      if (data.cols !== gridCols || data.rows !== gridRows) {
+        if (confirm('グリッドサイズが違います（' + data.cols + 'x' + data.rows + '）。スライダーを合わせて読み込みますか？')) {
+          slider.value = data.cols;
+          createGrid(data.cols);
+          sizeLabel.textContent = data.cols + '列 (' + data.rows + '行)';
+        } else { return; }
+      }
+      restoreColors(data.colors);
+      showStatus('読み込み完了');
+    } catch(e) { showStatus('読み込み失敗'); }
+  }
+
+  function exportJSON() {
+    const data = {
+      cols: gridCols,
+      rows: gridRows,
+      colors: getColors(),
+      savedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diamond_art_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showStatus('JSONファイルを書き出しました');
+  }
+
+  function importJSON(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (data.cols !== gridCols || data.rows !== gridRows) {
+          if (confirm('グリッドサイズが違います（' + data.cols + 'x' + data.rows + '）。リセットして読み込みますか？')) {
+            slider.value = data.cols;
+            createGrid(data.cols);
+            sizeLabel.textContent = data.cols + '列 (' + data.rows + '行)';
+          } else { return; }
+        }
+        restoreColors(data.colors);
+        autoSave();
+        showStatus('ファイル読み込み完了');
+      } catch(e) { showStatus('ファイルが不正です'); }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  }
+</script>
+</body>
+</html>
