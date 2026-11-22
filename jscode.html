@@ -65,7 +65,7 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
         <button class="tablinks" onclick="openTab(event, 'RippleSky')">🌌 夜空波紋</button>
         <button class="tablinks" onclick="openTab(event, 'LanternSky')">🏮 浮遊ランタン</button>
         <button class="tablinks" onclick="openTab(event, 'FireworkSky')">🎇 花火</button>
-        <button class="tablinks" onclick="openTab(event, 'RainSky')">🌧️ 雨と波紋</button>
+        <button class="tablinks" onclick="openTab(event, 'RainSky')">🌧️ 雨と波紋</button>            <button class="tablinks" onclick="openTab(event, 'Aquarium')">🐡水槽</button>
     </div>
 
 
@@ -94,8 +94,16 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
     <div id="RainSky" class="tabcontent">
         <h2>🌧️ 雨と波紋</h2>
         <canvas id="canvasRain" width="800" height="600"></canvas>
-        <p style="text-align:center;">自然に雨が降って地面で波紋が出るよ</p>
+        <p style="text-align:center;">自然に雨が降って地面で波紋が出るよ　コード：Grok作成</p>
     </div>
+
+  <!-- 水槽 -->
+    <div id="Aquarium" class="tabcontent">
+        <h2>🐡 水槽</h2>
+        <canvas id="canvasAqua" width="800" height="600"></canvas>
+        <p style="text-align:center;">マウスに向かって魚が泳ぐよ：Grok作成</p>
+    </div>
+
     <script>
         function openTab(evt, tabName) {
             let tabcontent = document.getElementsByClassName("tabcontent");
@@ -412,6 +420,167 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
 
         animateRain();
 
+// ==================== 水槽 ====================
+
+const canvas = document.getElementById("canvasAqua");
+const ctx = canvas.getContext("2d");
+let W = 0, H = 0;
+const mouse = { x: 0, y: 0, vx: 0, vy: 0, inside: false };
+let lastMX = 0, lastMY = 0;
+
+function resize() {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+}
+addEventListener("resize", resize);
+resize();
+
+addEventListener("mousemove", (e) => {
+  mouse.vx = e.clientX - lastMX;
+  mouse.vy = e.clientY - lastMY;
+  mouse.x = lastMX = e.clientX;
+  mouse.y = lastMY = e.clientY;
+  mouse.inside = true;
+});
+addEventListener("mouseleave", () => { mouse.inside = false; });
+
+const bubbles = Array.from({ length: 40 }, () => ({
+  x: Math.random(),
+  y: Math.random(),
+  r: 1 + Math.random() * 3,
+  s: 0.2 + Math.random() * 0.6
+}));
+
+function hueFor(i) {
+  const h = (i * 47) % 360;
+  return [h, 55 + (i % 20), 55 + (i % 15)];
+}
+
+class Fish {
+  constructor(i) {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 1.4;
+    this.vy = (Math.random() - 0.5) * 0.8;
+    this.ang = 0;
+    this.size = 10 + Math.random() * 18;
+    this.phase = Math.random() * Math.PI * 2;
+    const [h, s, l] = hueFor(i);
+    this.h = h; this.s = s; this.l = l;
+    this.fear = 90 + Math.random() * 80;
+  }
+  step() {
+    if (mouse.inside) {
+      const dx = this.x - mouse.x;
+      const dy = this.y - mouse.y;
+      const d = Math.hypot(dx, dy) || 1;
+      if (d < this.fear) {
+        const f = (this.fear - d) / this.fear;
+        this.vx += (dx / d) * f * 0.55;
+        this.vy += (dy / d) * f * 0.55;
+      } else if (d < this.fear * 2.2) {
+        this.vx += mouse.vx * 0.012;
+        this.vy += mouse.vy * 0.012;
+      }
+    }
+    this.vx += Math.sin(this.phase + performance.now() * 0.001) * 0.02;
+    this.vy += Math.cos(this.phase * 1.3) * 0.01;
+    this.vx *= 0.985;
+    this.vy *= 0.985;
+    const sp = Math.hypot(this.vx, this.vy);
+    const max = 3.2;
+    if (sp > max) {
+      this.vx = this.vx / sp * max;
+      this.vy = this.vy / sp * max;
+    }
+    if (sp < 0.35) {
+      this.vx += (Math.random() - 0.5) * 0.08;
+      this.vy += (Math.random() - 0.5) * 0.05;
+    }
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < -40) this.x = W + 40;
+    if (this.x > W + 40) this.x = -40;
+    if (this.y < 20) { this.y = 20; this.vy *= -0.6; }
+    if (this.y > H - 30) { this.y = H - 30; this.vy *= -0.6; }
+    this.ang = Math.atan2(this.vy, this.vx);
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.ang);
+    const s = this.size;
+    const wag = Math.sin(performance.now() * 0.012 + this.phase) * 0.35;
+    ctx.fillStyle = `hsl(${this.h} ${this.s}% ${this.l}%)`;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s, s * 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.7, 0);
+    ctx.lineTo(-s * 1.35, s * 0.45 + wag * s);
+    ctx.lineTo(-s * 1.35, -s * 0.45 - wag * s);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = `hsl(${this.h} ${this.s}% ${Math.max(30, this.l - 18)}%)`;
+    ctx.beginPath();
+    ctx.moveTo(s * 0.1, -s * 0.15);
+    ctx.lineTo(s * 0.05, -s * 0.7);
+    ctx.lineTo(-s * 0.15, -s * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#0b1720";
+    ctx.beginPath();
+    ctx.arc(s * 0.55, -s * 0.08, s * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+const fishes = Array.from({ length: 22 }, (_, i) => new Fish(i));
+
+function bg() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#041824");
+  g.addColorStop(0.55, "#062433");
+  g.addColorStop(1, "#031018");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(80,160,180,0.04)";
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.ellipse(W * (0.15 + i * 0.18), H * 0.92, 80 + i * 20, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawBubbles() {
+  ctx.fillStyle = "rgba(180,220,230,0.18)";
+  for (const b of bubbles) {
+    b.y -= b.s * 0.0015;
+    if (b.y < 0) { b.y = 1; b.x = Math.random(); }
+    ctx.beginPath();
+    ctx.arc(b.x * W, b.y * H, b.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawCursor() {
+  if (!mouse.inside) return;
+  ctx.beginPath();
+  ctx.arc(mouse.x, mouse.y, 7, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(200,240,255,0.7)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function loop() {
+  bg();
+  drawBubbles();
+  for (const f of fishes) { f.step(); f.draw(); }
+  drawCursor();
+  requestAnimationFrame(loop);
+}
+loop();
 
 
 
