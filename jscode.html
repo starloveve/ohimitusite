@@ -53,22 +53,22 @@
             font-size: 14px;
         }
 
-footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
-  footer a { color:var(--pink); }
-
+        footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
+        footer a { color:var(--pink); }
     </style>
 </head>
 <body>
     <h1>♡ お遊びまとめページ</h1>
    
-<div class="tab">
+    <div class="tab">
         <button class="tablinks" onclick="openTab(event, 'RippleSky')">🌌 夜空波紋</button>
         <button class="tablinks" onclick="openTab(event, 'LanternSky')">🏮 浮遊ランタン</button>
         <button class="tablinks" onclick="openTab(event, 'FireworkSky')">🎇 花火</button>
-        <button class="tablinks" onclick="openTab(event, 'RainSky')">🌧️ 雨と波紋</button>            <button class="tablinks" onclick="openTab(event, 'Aquarium')">🐡 水槽</button>
-<button class="tablinks" onclick="openTab(event, 'Snow')">❄️ 雪</button>
+        <button class="tablinks" onclick="openTab(event, 'RainSky')">🌧️ 雨と波紋</button>
+        <button class="tablinks" onclick="openTab(event, 'Aquarium')">🐡 水槽</button>
+        <button class="tablinks" onclick="openTab(event, 'Snow')">❄️ 雪</button>
+        <button class="tablinks" onclick="openTab(event, 'Water')">💧 水</button>
     </div>
-
 
     <!-- 夜空波紋 -->
     <div id="RippleSky" class="tabcontent">
@@ -91,37 +91,59 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
         <p style="text-align:center;">クリックで花火爆発！コード：Gemini生成</p>
     </div>
 
-  <!-- 雨タブ -->
+    <!-- 雨タブ -->
     <div id="RainSky" class="tabcontent">
         <h2>🌧️ 雨と波紋</h2>
         <canvas id="canvasRain" width="800" height="600"></canvas>
-        <p style="text-align:center;">自然に雨が降って地面で波紋が出るよ　コード：Grok作成</p>
+        <p style="text-align:center;">自然に雨が降って地面で波紋が出るよ コード：Grok作成</p>
     </div>
 
-  <!-- 水槽タブ -->
+    <!-- 水槽タブ -->
     <div id="Aquarium" class="tabcontent">
         <h2>🐡 水槽</h2>
-        <canvas id="canvasAqua" width="800" height="600"></canvas>
-        <p style="text-align:center;">マウスに向かって魚が泳ぐよ：Grok作成</p>
+        <canvas id="canvasAqua" width="800" height="500"></canvas>
+        <p style="text-align:center;">魚を追いかけてみて コード：Grok作成</p>
     </div>
 
-  <!-- 雪タブ -->
+    <!-- 雪タブ -->
     <div id="Snow" class="tabcontent">
         <h2>❄️ 雪</h2>
         <canvas id="canvasSnow" width="800" height="600"></canvas>
-        <p style="text-align:center;">クリックで雪の結晶が増えるコード：Gemini作成</p>
+        <p style="text-align:center;">クリックで雪の結晶が増える コード：Gemini作成</p>
+    </div>
+
+    <!-- 水タブ -->
+    <div id="Water" class="tabcontent">
+        <h2>💧 水</h2>
+        <canvas id="canvasWater" width="800" height="600"></canvas>
+        <p style="text-align:center;">クリックで水紋 コード：Gemini作成</p>
     </div>
 
     <script>
         function openTab(evt, tabName) {
-            let tabcontent = document.getElementsByClassName("tabcontent");
-            for (let i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
-            let tablinks = document.getElementsByClassName("tablinks");
-            for (let i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+            const tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            const tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
             document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.className += " active";
+            }
+
+            if (tabName === 'Aquarium') {
+                setTimeout(resizeAqua, 20);
+            }
+            if (tabName === 'Snow') {
+                setTimeout(initSnow, 50);
+            }
+            if (tabName === 'Water') {
+                setTimeout(initWater, 50);
+            }
         }
-        document.getElementsByClassName("tablinks")[0].click();
 
         // ==================== 🌌夜空波紋 ====================
         const canvasRipple = document.getElementById('canvasRipple');
@@ -296,7 +318,7 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
 
         animateLantern();
 
-// ==================== 🎇 花火 ====================
+        // ==================== 🎇 花火 ====================
         const canvasFW = document.getElementById('canvasFirework');
         const ctxFW = canvasFW.getContext('2d');
         
@@ -361,12 +383,11 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
 
         canvasFW.addEventListener('click', (e) => {
             createFirework(e.offsetX, e.offsetY);
-            // 音は後で追加（ファイルが必要）
         });
 
         animateFW();
 
-// ==================== 🌧️ 新しい雨アニメーション ====================
+        // ==================== 🌧️ 新しい雨アニメーション ====================
         const canvasRain = document.getElementById('canvasRain');
         const ctxRain = canvasRain.getContext('2d');
 
@@ -384,7 +405,6 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
             ctxRain.fillStyle = 'rgba(26, 42, 58, 0.25)';
             ctxRain.fillRect(0, 0, canvasRain.width, canvasRain.height);
 
-            // 雨生成
             if (Math.random() < 0.25) {
                 dropsRain.push({
                     x: Math.random() * canvasRain.width, 
@@ -393,7 +413,6 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
                 });
             }
 
-            // 雨の処理
             for (let i = dropsRain.length - 1; i >= 0; i--) {
                 let d = dropsRain[i];
                 d.y += d.speed;
@@ -406,7 +425,6 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
                 }
             }
 
-            // 波紋の処理
             for (let i = ripplesRain.length - 1; i >= 0; i--) {
                 let r = ripplesRain[i];
                 r.size += 1.2;
@@ -419,337 +437,381 @@ footer { text-align:center; padding:24px 16px 40px; font-size:.85rem; }
                 if (r.alpha <= 0) ripplesRain.splice(i, 1);
             }
 
-　　　　　
-
             requestAnimationFrame(animateRain);
         }
 
-  
-
         animateRain();
 
-// ==================== 水槽 ====================
+        // ==================== 水槽 ====================
+        const canvasAqua = document.getElementById("canvasAqua");
+        const ctxAqua = canvasAqua.getContext("2d");
+        let W = 800, H = 500;
+        const mouse = { x: 0, y: 0, vx: 0, vy: 0, inside: false };
+        let lastMX = 0, lastMY = 0;
 
-const canvas = document.getElementById("canvasAqua");
-const ctx = canvas.getContext("2d");
-let W = 0, H = 0;
-const mouse = { x: 0, y: 0, vx: 0, vy: 0, inside: false };
-let lastMX = 0, lastMY = 0;
+        function resizeAqua() {
+            const parent = canvasAqua.parentElement;
+            const w = Math.max(300, Math.min((parent && parent.clientWidth ? parent.clientWidth - 40 : 800), 900));
+            const h = 500;
 
-function resize() {
-  W = canvas.width = innerWidth;
-  H = canvas.height = innerHeight;
-}
-addEventListener("resize", resize);
-resize();
+            canvasAqua.style.width = w + "px";
+            canvasAqua.style.height = h + "px";
+            W = canvasAqua.width = w;
+            H = canvasAqua.height = h;
+        }
+        window.addEventListener("resize", resizeAqua);
 
-addEventListener("mousemove", (e) => {
-  mouse.vx = e.clientX - lastMX;
-  mouse.vy = e.clientY - lastMY;
-  mouse.x = lastMX = e.clientX;
-  mouse.y = lastMY = e.clientY;
-  mouse.inside = true;
-});
-addEventListener("mouseleave", () => { mouse.inside = false; });
+        canvasAqua.addEventListener("mousemove", (e) => {
+            const rect = canvasAqua.getBoundingClientRect();
+            const scaleX = W / (rect.width || W);
+            const scaleY = H / (rect.height || H);
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
 
-const bubbles = Array.from({ length: 40 }, () => ({
-  x: Math.random(),
-  y: Math.random(),
-  r: 1 + Math.random() * 3,
-  s: 0.2 + Math.random() * 0.6
-}));
-
-function hueFor(i) {
-  const h = (i * 47) % 360;
-  return [h, 55 + (i % 20), 55 + (i % 15)];
-}
-
-class Fish {
-  constructor(i) {
-    this.x = Math.random() * W;
-    this.y = Math.random() * H;
-    this.vx = (Math.random() - 0.5) * 1.4;
-    this.vy = (Math.random() - 0.5) * 0.8;
-    this.ang = 0;
-    this.size = 10 + Math.random() * 18;
-    this.phase = Math.random() * Math.PI * 2;
-    const [h, s, l] = hueFor(i);
-    this.h = h; this.s = s; this.l = l;
-    this.fear = 90 + Math.random() * 80;
-  }
-  step() {
-    if (mouse.inside) {
-      const dx = this.x - mouse.x;
-      const dy = this.y - mouse.y;
-      const d = Math.hypot(dx, dy) || 1;
-      if (d < this.fear) {
-        const f = (this.fear - d) / this.fear;
-        this.vx += (dx / d) * f * 0.55;
-        this.vy += (dy / d) * f * 0.55;
-      } else if (d < this.fear * 2.2) {
-        this.vx += mouse.vx * 0.012;
-        this.vy += mouse.vy * 0.012;
-      }
-    }
-    this.vx += Math.sin(this.phase + performance.now() * 0.001) * 0.02;
-    this.vy += Math.cos(this.phase * 1.3) * 0.01;
-    this.vx *= 0.985;
-    this.vy *= 0.985;
-    const sp = Math.hypot(this.vx, this.vy);
-    const max = 3.2;
-    if (sp > max) {
-      this.vx = this.vx / sp * max;
-      this.vy = this.vy / sp * max;
-    }
-    if (sp < 0.35) {
-      this.vx += (Math.random() - 0.5) * 0.08;
-      this.vy += (Math.random() - 0.5) * 0.05;
-    }
-    this.x += this.vx;
-    this.y += this.vy;
-    if (this.x < -40) this.x = W + 40;
-    if (this.x > W + 40) this.x = -40;
-    if (this.y < 20) { this.y = 20; this.vy *= -0.6; }
-    if (this.y > H - 30) { this.y = H - 30; this.vy *= -0.6; }
-    this.ang = Math.atan2(this.vy, this.vx);
-  }
-  draw() {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.ang);
-    const s = this.size;
-    const wag = Math.sin(performance.now() * 0.012 + this.phase) * 0.35;
-    ctx.fillStyle = `hsl(${this.h} ${this.s}% ${this.l}%)`;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, s, s * 0.42, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-s * 0.7, 0);
-    ctx.lineTo(-s * 1.35, s * 0.45 + wag * s);
-    ctx.lineTo(-s * 1.35, -s * 0.45 - wag * s);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = `hsl(${this.h} ${this.s}% ${Math.max(30, this.l - 18)}%)`;
-    ctx.beginPath();
-    ctx.moveTo(s * 0.1, -s * 0.15);
-    ctx.lineTo(s * 0.05, -s * 0.7);
-    ctx.lineTo(-s * 0.15, -s * 0.2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#0b1720";
-    ctx.beginPath();
-    ctx.arc(s * 0.55, -s * 0.08, s * 0.07, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-const fishes = Array.from({ length: 22 }, (_, i) => new Fish(i));
-
-function bg() {
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#041824");
-  g.addColorStop(0.55, "#062433");
-  g.addColorStop(1, "#031018");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "rgba(80,160,180,0.04)";
-  for (let i = 0; i < 5; i++) {
-    ctx.beginPath();
-    ctx.ellipse(W * (0.15 + i * 0.18), H * 0.92, 80 + i * 20, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawBubbles() {
-  ctx.fillStyle = "rgba(180,220,230,0.18)";
-  for (const b of bubbles) {
-    b.y -= b.s * 0.0015;
-    if (b.y < 0) { b.y = 1; b.x = Math.random(); }
-    ctx.beginPath();
-    ctx.arc(b.x * W, b.y * H, b.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawCursor() {
-  if (!mouse.inside) return;
-  ctx.beginPath();
-  ctx.arc(mouse.x, mouse.y, 7, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(200,240,255,0.7)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-}
-
-function loop() {
-  bg();
-  drawBubbles();
-  for (const f of fishes) { f.step(); f.draw(); }
-  drawCursor();
-  requestAnimationFrame(loop);
-}
-loop();
-
-
-// ==================== ❄️ 雪 ====================
-let snowInited = false;
-
-function initSnow() {
-    if (snowInited) return;
-    snowInited = true;
-
-    const canvas = document.getElementById('canvasSnow');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width || 800;
-        canvas.height = rect.height || 600;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    // 1. 背景の静かな星
-    const stars = [];
-    for (let i = 0; i < 100; i++) {
-        stars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 1.5,
-            alpha: Math.random() * 0.5 + 0.3
+            mouse.vx = mx - lastMX;
+            mouse.vy = my - lastMY;
+            mouse.x = lastMX = mx;
+            mouse.y = lastMY = my;
+            mouse.inside = true;
         });
-    }
 
-    // 2. 雪の結晶を作る共通関数
-    function createCrystal(x, y) {
-        return {
-            x: x !== undefined ? x : Math.random() * canvas.width,
-            y: y !== undefined ? y : Math.random() * -canvas.height,
-            size: Math.random() * 30 + 20,
-            angle: Math.random() * Math.PI * 2,
-            rotSpeed: (Math.random() * 0.01 + 0.002) * (Math.random() > 0.5 ? 1 : -1),
-            speedY: Math.random() * 0.5 + 0.3,
-            speedX: Math.random() * 0.2 - 0.1,
-            opacity: Math.random() * 0.4 + 0.2
-        };
-    }
+        canvasAqua.addEventListener("mouseleave", () => { mouse.inside = false; });
 
-    const crystals = [];
-    const numCrystals = 15;
-    const maxCrystals = 60;
+        const bubbles = Array.from({ length: 40 }, () => ({
+            x: Math.random(),
+            y: Math.random(),
+            r: 1 + Math.random() * 3,
+            s: 0.2 + Math.random() * 0.6
+        }));
 
-    for (let i = 0; i < numCrystals; i++) {
-        crystals.push(createCrystal());
-    }
+        function hueFor(i) {
+            const h = (i * 47) % 360;
+            return [h, 55 + (i % 20), 55 + (i % 15)];
+        }
 
-    // クリックした場所に雪の結晶を追加
-    canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        const addCount = Math.floor(Math.random() * 2) + 1;
-        for (let i = 0; i < addCount; i++) {
-            const offsetX = (Math.random() - 0.5) * 40;
-            const offsetY = (Math.random() - 0.5) * 40;
-            crystals.push(createCrystal(clickX + offsetX, clickY + offsetY));
-
-            if (crystals.length > maxCrystals) {
-                crystals.shift();
+        class Fish {
+            constructor(i) {
+                this.x = Math.random() * W;
+                this.y = Math.random() * H;
+                this.vx = (Math.random() - 0.5) * 1.4;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.ang = 0;
+                this.size = 10 + Math.random() * 18;
+                this.phase = Math.random() * Math.PI * 2;
+                const [h, s, l] = hueFor(i);
+                this.h = h; this.s = s; this.l = l;
+                this.fear = 90 + Math.random() * 80;
+            }
+            step() {
+                if (mouse.inside) {
+                    const dx = this.x - mouse.x;
+                    const dy = this.y - mouse.y;
+                    const d = Math.hypot(dx, dy) || 1;
+                    if (d < this.fear) {
+                        const f = (this.fear - d) / this.fear;
+                        this.vx += (dx / d) * f * 0.55;
+                        this.vy += (dy / d) * f * 0.55;
+                    } else if (d < this.fear * 2.2) {
+                        this.vx += mouse.vx * 0.012;
+                        this.vy += mouse.vy * 0.012;
+                    }
+                }
+                this.vx += Math.sin(this.phase + performance.now() * 0.001) * 0.02;
+                this.vy += Math.cos(this.phase * 1.3) * 0.01;
+                this.vx *= 0.985;
+                this.vy *= 0.985;
+                const sp = Math.hypot(this.vx, this.vy);
+                const max = 3.2;
+                if (sp > max) {
+                    this.vx = this.vx / sp * max;
+                    this.vy = this.vy / sp * max;
+                }
+                if (sp < 0.35) {
+                    this.vx += (Math.random() - 0.5) * 0.08;
+                    this.vy += (Math.random() - 0.5) * 0.05;
+                }
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < -40) this.x = W + 40;
+                if (this.x > W + 40) this.x = -40;
+                if (this.y < 20) { this.y = 20; this.vy *= -0.6; }
+                if (this.y > H - 30) { this.y = H - 30; this.vy *= -0.6; }
+                this.ang = Math.atan2(this.vy, this.vx);
+            }
+            draw() {
+                ctxAqua.save();
+                ctxAqua.translate(this.x, this.y);
+                ctxAqua.rotate(this.ang);
+                const s = this.size;
+                const wag = Math.sin(performance.now() * 0.012 + this.phase) * 0.35;
+                ctxAqua.fillStyle = `hsl(${this.h} ${this.s}% ${this.l}%)`;
+                ctxAqua.beginPath();
+                ctxAqua.ellipse(0, 0, s, s * 0.42, 0, 0, Math.PI * 2);
+                ctxAqua.fill();
+                ctxAqua.beginPath();
+                ctxAqua.moveTo(-s * 0.7, 0);
+                ctxAqua.lineTo(-s * 1.35, s * 0.45 + wag * s);
+                ctxAqua.lineTo(-s * 1.35, -s * 0.45 - wag * s);
+                ctxAqua.closePath();
+                ctxAqua.fill();
+                ctxAqua.fillStyle = `hsl(${this.h} ${this.s}% ${Math.max(30, this.l - 18)}%)`;
+                ctxAqua.beginPath();
+                ctxAqua.moveTo(s * 0.1, -s * 0.15);
+                ctxAqua.lineTo(s * 0.05, -s * 0.7);
+                ctxAqua.lineTo(-s * 0.15, -s * 0.2);
+                ctxAqua.closePath();
+                ctxAqua.fill();
+                ctxAqua.fillStyle = "#0b1720";
+                ctxAqua.beginPath();
+                ctxAqua.arc(s * 0.55, -s * 0.08, s * 0.07, 0, Math.PI * 2);
+                ctxAqua.fill();
+                ctxAqua.restore();
             }
         }
-    });
 
-    // 雪の結晶の形を描く関数
-    function drawCrystalShape(ctx, size) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = size * 0.05;
-        ctx.lineCap = 'round';
+        const fishes = Array.from({ length: 22 }, (_, i) => new Fish(i));
 
-        for (let i = 0; i < 6; i++) {
-            ctx.rotate(Math.PI / 3);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, size);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(0, size * 0.5);
-            ctx.lineTo(size * 0.2, size * 0.65);
-            ctx.moveTo(0, size * 0.5);
-            ctx.lineTo(-size * 0.2, size * 0.65);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(0, size * 0.8);
-            ctx.lineTo(size * 0.15, size * 0.9);
-            ctx.moveTo(0, size * 0.8);
-            ctx.lineTo(-size * 0.15, size * 0.9);
-            ctx.stroke();
-        }
-    }
-
-    // メインループ
-    function animate() {
-        ctx.fillStyle = 'rgba(3, 3, 13, 0.08)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        stars.forEach(star => {
-            ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha + Math.sin(Date.now() * 0.002 + star.x) * 0.2})`;
-            ctx.fillRect(star.x, star.y, star.size, star.size);
-        });
-
-        crystals.forEach(cry => {
-            ctx.save();
-            ctx.translate(cry.x, cry.y);
-            ctx.rotate(cry.angle);
-            ctx.globalAlpha = cry.opacity;
-
-            drawCrystalShape(ctx, cry.size);
-
-            ctx.restore();
-
-            cry.y += cry.speedY;
-            cry.x += cry.speedX;
-            cry.angle += cry.rotSpeed;
-
-            if (cry.y > canvas.height + cry.size * 2) {
-                cry.y = -cry.size * 2;
-                cry.x = Math.random() * canvas.width;
+        function bgAqua() {
+            const g = ctxAqua.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, "#041824");
+            g.addColorStop(0.55, "#062433");
+            g.addColorStop(1, "#031018");
+            ctxAqua.fillStyle = g;
+            ctxAqua.fillRect(0, 0, W, H);
+            ctxAqua.fillStyle = "rgba(80,160,180,0.04)";
+            for (let i = 0; i < 5; i++) {
+                ctxAqua.beginPath();
+                ctxAqua.ellipse(W * (0.15 + i * 0.18), H * 0.92, 80 + i * 20, 18, 0, 0, Math.PI * 2);
+                ctxAqua.fill();
             }
-        });
+        }
 
-        requestAnimationFrame(animate);
-    }
+        function drawBubblesAqua() {
+            ctxAqua.fillStyle = "rgba(180,220,230,0.18)";
+            for (const b of bubbles) {
+                b.y -= b.s * 0.0015;
+                if (b.y < 0) { b.y = 1; b.x = Math.random(); }
+                ctxAqua.beginPath();
+                ctxAqua.arc(b.x * W, b.y * H, b.r, 0, Math.PI * 2);
+                ctxAqua.fill();
+            }
+        }
 
-    animate();
-}
+        function drawCursorAqua() {
+            if (!mouse.inside) return;
+            ctxAqua.beginPath();
+            ctxAqua.arc(mouse.x, mouse.y, 7, 0, Math.PI * 2);
+            ctxAqua.strokeStyle = "rgba(200,240,255,0.7)";
+            ctxAqua.lineWidth = 1.5;
+            ctxAqua.stroke();
+        }
 
-// タブ切り替え関数に追加
-function openTab(evt, tabName) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
+        function loopAqua() {
+            bgAqua();
+            drawBubblesAqua();
+            for (const f of fishes) { f.step(); f.draw(); }
+            drawCursorAqua();
+            requestAnimationFrame(loopAqua);
+        }
+        loopAqua();
 
-    // 雪タブを開いたときに初期化
-    if (tabName === 'Snow') {
-        setTimeout(initSnow, 50); // 表示されてから少し待って初期化
-    }
-}    
+        // ==================== ❄️ 雪 ====================
+        let snowInited = false;
 
-</script>
-<footer>
-  <a href="index.html">じみた工房のトップにもどる</a>
-</footer>
+        function initSnow() {
+            if (snowInited) return;
+            snowInited = true;
 
+            const canvas = document.getElementById('canvasSnow');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width || 800;
+                canvas.height = rect.height || 600;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5,
+                    alpha: Math.random() * 0.5 + 0.3
+                });
+            }
+
+            function createCrystal(x, y) {
+                return {
+                    x: x !== undefined ? x : Math.random() * canvas.width,
+                    y: y !== undefined ? y : Math.random() * -canvas.height,
+                    size: Math.random() * 30 + 20,
+                    angle: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() * 0.01 + 0.002) * (Math.random() > 0.5 ? 1 : -1),
+                    speedY: Math.random() * 0.5 + 0.3,
+                    speedX: Math.random() * 0.2 - 0.1,
+                    opacity: Math.random() * 0.4 + 0.2
+                };
+            }
+
+            const crystals = [];
+            const numCrystals = 15;
+            const maxCrystals = 60;
+
+            for (let i = 0; i < numCrystals; i++) {
+                crystals.push(createCrystal());
+            }
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                const addCount = Math.floor(Math.random() * 2) + 1;
+                for (let i = 0; i < addCount; i++) {
+                    const offsetX = (Math.random() - 0.5) * 40;
+                    const offsetY = (Math.random() - 0.5) * 40;
+                    crystals.push(createCrystal(clickX + offsetX, clickY + offsetY));
+
+                    if (crystals.length > maxCrystals) {
+                        crystals.shift();
+                    }
+                }
+            });
+
+            function drawCrystalShape(ctx, size) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = size * 0.05;
+                ctx.lineCap = 'round';
+
+                for (let i = 0; i < 6; i++) {
+                    ctx.rotate(Math.PI / 3);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, size);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, size * 0.5);
+                    ctx.lineTo(size * 0.2, size * 0.65);
+                    ctx.moveTo(0, size * 0.5);
+                    ctx.lineTo(-size * 0.2, size * 0.65);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, size * 0.8);
+                    ctx.lineTo(size * 0.15, size * 0.9);
+                    ctx.moveTo(0, size * 0.8);
+                    ctx.lineTo(-size * 0.15, size * 0.9);
+                    ctx.stroke();
+                }
+            }
+
+            function animate() {
+                ctx.fillStyle = 'rgba(3, 3, 13, 0.08)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                stars.forEach(star => {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha + Math.sin(Date.now() * 0.002 + star.x) * 0.2})`;
+                    ctx.fillRect(star.x, star.y, star.size, star.size);
+                });
+
+                crystals.forEach(cry => {
+                    ctx.save();
+                    ctx.translate(cry.x, cry.y);
+                    ctx.rotate(cry.angle);
+                    ctx.globalAlpha = cry.opacity;
+
+                    drawCrystalShape(ctx, cry.size);
+
+                    ctx.restore();
+
+                    cry.y += cry.speedY;
+                    cry.x += cry.speedX;
+                    cry.angle += cry.rotSpeed;
+
+                    if (cry.y > canvas.height + cry.size * 2) {
+                        cry.y = -cry.size * 2;
+                        cry.x = Math.random() * canvas.width;
+                    }
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // ==================== 💧 水 ====================
+        let waterInited = false;
+
+        function initWater() {
+            if (waterInited) return;
+            waterInited = true;
+
+            const canvas = document.getElementById('canvasWater');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width || 800;
+                canvas.height = rect.height || 600;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            let ripples = [];
+
+            function draw() {
+                ctx.fillStyle = 'rgba(5, 5, 15, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                for (let i = ripples.length - 1; i >= 0; i--) {
+                    let r = ripples[i];
+                    r.size += 2;
+                    r.alpha -= 0.015;
+                    
+                    for(let j = 0; j < 3; j++) {
+                        let currentRadius = r.size - (j * 10);
+                        if (currentRadius > 0) {
+                            ctx.beginPath();
+                            ctx.arc(r.x, r.y, currentRadius, 0, Math.PI * 2);
+                            ctx.strokeStyle = `rgba(200, 240, 255, ${Math.max(0, r.alpha * (1 - j * 0.3))})`;
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    if (Math.random() > 0.8) {
+                        ctx.fillStyle = "white";
+                        ctx.fillRect(r.x + (Math.random()-0.5)*r.size, r.y + (Math.random()-0.5)*r.size, 1.5, 1.5);
+                    }
+                    
+                    if (r.alpha <= 0) ripples.splice(i, 1);
+                }
+                requestAnimationFrame(draw);
+            }
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                ripples.push({
+                    x: e.clientX - rect.left, 
+                    y: e.clientY - rect.top, 
+                    size: 5, 
+                    alpha: 1
+                });
+            });
+
+            draw();
+        }
+
+        // 最初のタブを開く
+        document.getElementsByClassName("tablinks")[0].click();
+    </script>
+    <footer>
+        <a href="index.html">じみた工房のトップにもどる</a>
+    </footer>
 </body>
 </html>
