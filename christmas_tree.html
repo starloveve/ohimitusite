@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>クリスマスツリー飾り付け</title>
+<style>
+body {
+  background: linear-gradient(#0a0a2a, #1a1a4a);
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+}
+canvas {
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  background: #0d1b2a;
+  cursor: crosshair;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+.controls {
+  margin: 15px 0;
+}
+button, select {
+  margin: 5px;
+  padding: 8px 16px;
+  font-size: 16px;
+  background: #c41e3a;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background: #a01830; }
+#status { margin-top: 10px; font-size: 14px; color: #ffd700; }
+</style>
+</head>
+<body>
+<h1>🎄 クリスマスツリー飾り付け 🎄</h1>
+<div class="controls">
+  <button id="clear">全部消す</button>
+  <button id="random">ランダム飾り付け</button>
+  <select id="ornament">
+    <option value="ball">オーナメントボール</option>
+    <option value="star">星</option>
+    <option value="light">ライト</option>
+    <option value="snow">雪の結晶</option>
+    <option value="gift">プレゼント</option>
+  </select>
+  <select id="color">
+    <option value="#ff0000">赤</option>
+    <option value="#00ff00">緑</option>
+    <option value="#ffff00">黄</option>
+    <option value="#ff69b4">ピンク</option>
+    <option value="#00bfff">青</option>
+    <option value="#ffffff">白</option>
+    <option value="#ffa500">オレンジ</option>
+    <option value="#ffd700">金</option>
+  </select>
+</div>
+<canvas id="tree" width="600" height="700"></canvas>
+<div id="status">クリックで飾り付け！</div>
+
+<script>
+const canvas = document.getElementById('tree');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+
+let ornaments = [];
+let currentType = 'ball';
+let currentColor = '#ff0000';
+
+function drawTree() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 幹
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(270, 580, 60, 80);
+
+  // 木（三角）
+  ctx.fillStyle = '#0a5c0a';
+  ctx.beginPath();
+  ctx.moveTo(300, 80);
+  ctx.lineTo(120, 580);
+  ctx.lineTo(480, 580);
+  ctx.closePath();
+  ctx.fill();
+
+  // 層を少し濃く
+  ctx.fillStyle = '#0d6b0d';
+  ctx.beginPath();
+  ctx.moveTo(300, 180);
+  ctx.lineTo(160, 420);
+  ctx.lineTo(440, 420);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#128012';
+  ctx.beginPath();
+  ctx.moveTo(300, 280);
+  ctx.lineTo(200, 480);
+  ctx.lineTo(400, 480);
+  ctx.closePath();
+  ctx.fill();
+
+  // トップの星
+  drawStar(300, 70, 25, '#ffd700');
+
+  // 飾り付けを描画
+  ornaments.forEach(o => drawOrnament(o));
+}
+
+function drawStar(x, y, size, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+    const px = x + Math.cos(angle) * size;
+    const py = y + Math.sin(angle) * size;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawOrnament(o) {
+  ctx.save();
+  ctx.translate(o.x, o.y);
+  ctx.fillStyle = o.color;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+
+  switch (o.type) {
+    case 'ball':
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 光沢
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.beginPath();
+      ctx.arc(-4, -4, 4, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    case 'star':
+      drawStar(0, 0, 14, o.color);
+      break;
+    case 'light':
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = o.color;
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      break;
+    case 'snow':
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        const angle = i * Math.PI / 3;
+        ctx.lineTo(Math.cos(angle) * 12, Math.sin(angle) * 12);
+        ctx.stroke();
+      }
+      break;
+    case 'gift':
+      ctx.fillRect(-10, -8, 20, 16);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(-2, -8, 4, 16);
+      ctx.fillRect(-10, -2, 20, 4);
+      break;
+  }
+  ctx.restore();
+}
+
+function isOnTree(x, y) {
+  // 簡易的な三角形判定
+  const top = 80, bottom = 580;
+  if (y < top || y > bottom) return false;
+  const progress = (y - top) / (bottom - top);
+  const halfWidth = 180 * progress;
+  return Math.abs(x - 300) < halfWidth;
+}
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  // 表示サイズと内部サイズの比率を計算
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
+  if (isOnTree(x, y)) {
+    ornaments.push({
+      x: x,
+      y: y,
+      type: currentType,
+      color: currentColor
+    });
+    drawTree();
+    status.textContent = `飾り付けたよ！ (${ornaments.length}個)`;
+  } else {
+    status.textContent = '木の上をクリックしてね';
+  }
+});
+
+document.getElementById('ornament').addEventListener('change', (e) => {
+  currentType = e.target.value;
+});
+
+document.getElementById('color').addEventListener('change', (e) => {
+  currentColor = e.target.value;
+});
+
+document.getElementById('clear').addEventListener('click', () => {
+  ornaments = [];
+  drawTree();
+  status.textContent = '全部消したよ';
+});
+
+document.getElementById('random').addEventListener('click', () => {
+  ornaments = [];
+  const types = ['ball', 'star', 'light', 'snow', 'gift'];
+  const colors = ['#ff0000', '#00ff00', '#ffff00', '#ff69b4', '#00bfff', '#ffffff', '#ffa500', '#ffd700'];
+  for (let i = 0; i < 25; i++) {
+    let x, y;
+    do {
+      y = 100 + Math.random() * 450;
+      const progress = (y - 80) / 500;
+      const half = 180 * progress;
+      x = 300 + (Math.random() - 0.5) * half * 1.6;
+    } while (!isOnTree(x, y));
+    ornaments.push({
+      x, y,
+      type: types[Math.floor(Math.random() * types.length)],
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+  drawTree();
+  status.textContent = 'ランダム飾り付けしたよ！';
+});
+
+// 初期描画
+drawTree();
+</script>
+<footer>コード:Grok生成<br><a href="index.html">じみた工房へ戻る</a></footer>
+
+</body>
+</html>
