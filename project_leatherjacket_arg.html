@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project LeatherJacket | GitHub Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f6f8fa;
+  --ink: #1f2328;
+  --muted: #656d76;
+  --accent: #0969da;
+  --accent-weak: color-mix(in oklab, var(--accent) 10%, var(--bg));
+  --line: color-mix(in oklab, var(--ink) 10%, transparent);
+  --danger: #cf222e;
+  --warn: #9a6700;
+  --step-0: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
+  --step-1: clamp(1.1rem, 1rem + 0.5vw, 1.35rem);
+  --step-2: clamp(1.5rem, 1.2rem + 1.2vw, 2.2rem);
+  --step-3: clamp(2rem, 1.5rem + 2vw, 3rem);
+  --space: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --radius: 6px;
+  --shadow: 0 1px 2px rgba(31,35,40,0.04), 0 8px 24px rgba(31,35,40,0.08);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: "Inter", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--step-0);
+  line-height: 1.75;
+}
+
+/* ===== Header ===== */
+header {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.9rem var(--space);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.octicon {
+  width: 32px; height: 32px;
+  fill: var(--ink);
+}
+
+.repo-path {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.repo-path strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ===== Layout ===== */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: calc(var(--space)*2) var(--space);
+}
+
+/* ===== Hero ===== */
+.hero {
+  text-align: center;
+  padding: calc(var(--space)*3) 0 calc(var(--space)*2);
+}
+
+.hero h1 {
+  font-size: var(--step-3);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+}
+
+.hero .tagline {
+  font-size: var(--step-1);
+  color: var(--muted);
+  margin: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 1rem;
+}
+
+.badge::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: #3fb950;
+  border-radius: 50%;
+}
+
+/* ===== Sections ===== */
+section {
+  margin-top: calc(var(--space)*2.5);
+}
+
+h2 {
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--line);
+}
+
+h3 {
+  font-size: var(--step-1);
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p { margin: 0.6rem 0; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ===== Code blocks ===== */
+pre, code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+}
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+code {
+  background: var(--surface);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ===== Terminal block ===== */
+.terminal {
+  background: #0d1117;
+  color: #c9d1d9;
+  border-radius: var(--radius);
+  padding: 1rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  line-height: 1.7;
+  overflow-x: auto;
+  position: relative;
+}
+
+.terminal::before {
+  content: "● ● ●";
+  color: #484f58;
+  font-size: 0.6em;
+  letter-spacing: 0.4em;
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.terminal .prompt { color: #7ee787; }
+.terminal .cmd { color: #fff; }
+.terminal .output { color: #8b949e; }
+.terminal .secret { color: #0d1117; cursor: help; }
+.terminal .secret:hover { color: #f0883e; }
+
+/* ===== Glitch text ===== */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== Hidden message ===== */
+.reveal-box {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reveal-box:hover {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+}
+
+.reveal-box .hidden {
+  display: none;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9em;
+  color: var(--danger);
+}
+
+.reveal-box.open .hidden { display: block; }
+
+/* ===== Cipher table ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9em;
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+
+th {
+  background: var(--surface);
+  font-weight: 600;
+}
+
+/* ===== Footer ===== */
+footer {
+  margin-top: calc(var(--space)*3);
+  padding: calc(var(--space)*1.5) var(--space);
+  border-top: 1px solid var(--line);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+/* ===== ARG easter egg: corrupted mode ===== */
+body.corrupted {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --ink: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent-weak: color-mix(in oklab, var(--accent) 12%, var(--surface));
+  --line: #30363d;
+}
+
+body.corrupted .hero h1 {
+  color: #f0883e;
+  text-shadow: 2px 0 #cf222e, -2px 0 #3fb950;
+}
+
+body.corrupted .badge::before {
+  background: #f0883e;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ===== Scroll reveal ===== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Console hint ===== */
+.console-hint {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .hero { padding: 1.5rem 0 1rem; }
+  .terminal { font-size: 0.75em; }
+}
+
+@media print {
+  body { background: #fff; }
+  .no-print, .console-hint { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <svg class="octicon" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M48.854 0C21.839 0 0 22 0 49.217c0 21.758 13.993 40.172 33.405 46.69 2.427.49 3.316-1.06 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+    </svg>
+    <span class="repo-path"><strong>leatherjacket-cult</strong> / <span id="repo-name">project-gpu-truth</span></span>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <h1 id="hero-title" data-text="Project LeatherJacket">Project LeatherJacket</h1>
+    <p class="tagline">GPUの真実を、我々は忘れない。</p>
+    <span class="badge" id="status-badge">Status: Online</span>
+  </div>
+
+  <section class="fade-in">
+    <h2>📁 About</h2>
+    <p>
+      これは一見ただのGitHub Pagesサイトに見えるだろう。しかし、君がここに辿り着いたということは、
+      すでに<span class="glitch" data-text="深く">深く</span>関わっているということだ。
+    </p>
+    <p>
+      2026年11月23日。革ジャンを纏った男は帰ってきた。社員たちは歓声を上げ、
+      3フロア分の拍手に包まれた。「二度目はより良いCEOになる」と彼は言った。
+    </p>
+    <p>
+      しかし、すべての社員が喜んでいるわけではない。ある者は辞任した。そして、今、戻ることを考えている。
+    </p>
+  </section>
+
+  <section class="fade-in">
+    <h2>🧩 The Message</h2>
+    <p>以下は、上海にいたシニアリサーチエンジニアが残した記録だ。</p>
+    <div class="terminal">
+<span class="prompt">$</span> <span class="cmd">cat /var/log/resignation.txt</span>
+<span class="output">
+Welcome back, Jensen. I'm happy to see you return,
+and happy for my friends and former colleagues at NVIDIA.
+
+Looking back, I may have moved too quickly,
+and I don't want to rush into another major decision.
+For now, I'd like to take some time to rest, reflect,
+and think carefully about my future.
+As part of that, I'm open to exploring the possibility of returning.
+
+Thank you for all the kindness and encouragement.
+Whatever comes next, I want to approach it with a clearer mind
+and give it the thought it deserves.
+</span>
+<span class="prompt">$</span> <span class="cmd">_</span><span class="secret"> 暗号: 47 50 85 86 32 73 69 82 32 67 80 85</span>
+    </div>
+    <p style="font-size:0.85em;color:var(--muted);margin-top:0.5rem;">
+      ※ カーソル部分に隠しメッセージがあります。マウスオーバーしてみてください。
+    </p>
+  </section>
+
+  <section class="fade-in">
+    <h2>🔍 Clues</h2>
+    <p>以下の記録には、真実への手がかりが散りばめられている。</p>
+
+    <h3>記録 #1 — 社内の声</h3>
+    <div class="reveal-box" onclick="this.classList.toggle('open')">
+      <strong>[クリックで展開]</strong> 社内プラットフォームに残された発言
+      <div class="hidden">
+        "Everyone agrees that mistakes were made, the question is what we are ready to forgive."
+        <br><br>
+        "I don't know how comfortable I'll be working at a place where such affairs are not taken extremely seriously."
+        <br><br>
+        "If Jensen comes back, I'm not doing any HR trainings ever again."
+      </div>
+    </div>
+
+    <h3>記録 #2 — 帰還の瞬間</h3>
+    <div class="reveal-box" onclick="this.classList.toggle('open')">
+      <strong>[クリックで展開]</strong> 2026年11月23日、本社にて
+      <div class="hidden">
+        "Thank you all for the second chance. I'm going to be a better CEO the second time around."
+        <br><br>
+        社員たちは彼の名前を連呼した。3フロアが歓声に包まれた。
+        カップケーキには「Jensen is back」と書かれていた。
+      </div>
+    </div>
+
+    <h3>記録 #3 — 謎の署名運動</h3>
+    <div class="reveal-box" onclick="this.classList.toggle('open')">
+      <strong>[クリックで展開]</strong> Stand With Jensen
+      <div class="hidden">
+        10,000人以上の署名。しかし、全社員のうちのどれだけか。
+        ある者は歓喜し、ある者は静かに煮えていた。
+        <br><br>
+        そして、ウーバーの元CEOは「シリコンウェハーで飾ったメガホン」を持っ
+        抗議に来ると公言していた……。
+      </div>
+    </div>
+  </section>
+
+  <section class="fade-in">
+    <h2>🗝️ Cipher</h2>
+    <p>この表を使えば、何かが読めるかもしれない。</p>
+    <table>
+      <thead>
+        <tr><th>記号</th><th>意味</th><th>出典</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>47 50 85 86</td><td>???</td><td>terminal secret</td></tr>
+        <tr><td>革ジャン</td><td>リーダーの象徴</td><td>common knowledge</td></tr>
+        <tr><td>second chance</td><td>二度目の機会</td><td>return speech</td></tr>
+        <tr><td>wafer-encrusted megaphone</td><td>抗議の道具</td><td>Travis Kalanick</td></tr>
+        <tr><td>one team</td><td>統一文化、異論を許さない</td><td>internal critics</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:1rem;">
+      <em>「真実は、常に隠されているわけではない。見ようとしない者には見えないだけだ。」</em>
+    </p>
+  </section>
+
+  <section class="fade-in">
+    <h2>🧪 Experiment</h2>
+    <p>このページでは実験が行われている。以下のコマンドをブラウザのコンソールに入力してみよ。</p>
+    <pre><code>decodeTruth()</code></pre>
+    <p>あるいは、ページ内のどこかを<span style="cursor:pointer;color:var(--accent);" onclick="toggleCorrupted()">【ここ】</span>長押ししてみよ。</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2026 Project LeatherJacket. Hosted on GitHub Pages.</p>
+  <p style="font-size:0.75em;opacity:0.6;margin-top:0.3rem;">
+    このサイトはフィクションです。たぶん。
+  </p>
+</footer>
+
+<div class="console-hint no-print">F12 → Console</div>
+
+<script>
+// ===== Scroll reveal =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ===== Console easter egg =====
+function decodeTruth() {
+  console.clear();
+  console.log(
+    "%c【真実のデコード】\n\n" +
+    "47 50 85 86 32 73 69 82 32 67 80 85\n\n" +
+    "→ GPU IS CPU ???\n\n" +
+    "革ジャンは戻ってきた。\n" +
+    "だが、すべてが元通りになるわけではない。\n\n" +
+    "Welcome back, Jensen.\n" +
+    "But some doors, once opened, cannot be closed.",
+    "color:#f0883e; font-size:14px; font-family:monospace;"
+  );
+  console.log(
+    "%c[SYSTEM] 暗号解読完了。",
+    "color:#3fb950; font-family:monospace;"
+  );
+  return "✓ decoded";
+}
+
+// ===== Corrupted mode toggle =====
+let corrupted = false;
+function toggleCorrupted() {
+  corrupted = !corrupted;
+  document.body.classList.toggle('corrupted', corrupted);
+  const badge = document.getElementById('status-badge');
+  const repo = document.getElementById('repo-name');
+  const title = document.getElementById('hero-title');
+  if (corrupted) {
+    badge.textContent = "Status: CORRUPTED";
+    repo.textContent = "project-gpu-truth [REDACTED]";
+    title.setAttribute('data-text', 'THEY CAME BACK');
+    title.textContent = "THEY CAME BACK";
+  } else {
+    badge.textContent = "Status: Online";
+    repo.textContent = "project-gpu-truth";
+    title.setAttribute('data-text', 'Project LeatherJacket');
+    title.textContent = "Project LeatherJacket";
+  }
+}
+
+// ===== Secret key combo =====
+let keyBuffer = "";
+document.addEventListener('keydown', (e) => {
+  keyBuffer += e.key.toLowerCase();
+  keyBuffer = keyBuffer.slice(-10);
+  if (keyBuffer.includes("jensen")) {
+    console.log("%c[ALERT] キーワード検出: jensen", "color:#cf222e;font-family:monospace;");
+    document.querySelectorAll('.reveal-box').forEach(el => el.classList.add('open'));
+  }
+  if (keyBuffer.includes("leather")) {
+    toggleCorrupted();
+  }
+});
+
+// ===== Init console message =====
+console.log(
+  "%c👁 Project LeatherJacket\n%cコンソールに decodeTruth() と入力してください。",
+  "color:#0969da; font-size:16px; font-weight:bold; font-family:monospace;",
+  "color:#656d76; font-family:monospace;"
+);
+</script>
+
+</body>
+</html>
